@@ -1,6 +1,6 @@
 # Creative Commons Attribution-NonCommercial 4.0 International License
 
-Hydration Hero is licensed under a **Creative Commons Attribution-NonCommercial 4.0 International License**.
+Life Tracker is licensed under a **Creative Commons Attribution-NonCommercial 4.0 International License**.
 
 ## You are free to
 

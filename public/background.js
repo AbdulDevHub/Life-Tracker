@@ -1,126 +1,114 @@
-// background.js
+// Life Tracker service worker: toolbar badge (habits left today) and reminders.
+// Plain JS copied as-is by Vite; keep the date logic in sync with src/lib/dates.js.
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "startTimer") {
-    const { title, message, duration } = request.payload;
-    startTimer(title, message, duration, sendResponse);
-    return true;
-  } else if (request.action === "getTimerStatus") {
-    getTimerStatus(sendResponse);
-    return true;
+const KEYS = { habits: "lt.habits", water: "lt.water", settings: "lt.settings" }
+const ALARM = { tick: "lt-tick", habits: "lt-habits", water: "lt-water" }
+const WATER_RESET_HOUR = 3
+
+const pad = (n) => String(n).padStart(2, "0")
+const dayKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+const monthKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}`
+const waterDayKey = (d) => dayKey(new Date(d.getTime() - WATER_RESET_HOUR * 3600 * 1000))
+
+async function load() {
+  const r = await chrome.storage.local.get(Object.values(KEYS))
+  return {
+    habits: r[KEYS.habits] || { months: {}, checks: {} },
+    water: r[KEYS.water] || { goal: 2000, days: {} },
+    settings: r[KEYS.settings] || {},
   }
-});
+}
 
-function startTimer(title, message, duration, sendResponse) {
-  chrome.alarms.clearAll();
+function habitsLeft(habits, now = new Date()) {
+  const mk = monthKey(now)
+  let list = habits.months?.[mk]
+  if (!list) {
+    const earlier = Object.keys(habits.months || {}).filter((k) => k < mk).sort()
+    list = earlier.length ? habits.months[earlier[earlier.length - 1]] : []
+  }
+  const done = habits.checks?.[dayKey(now)] || {}
+  return list.filter((h) => !done[h.id]).length
+}
 
-  const startTime = Date.now();
-  const endTime = startTime + duration * 1000;
+function waterToday(water, now = new Date()) {
+  return (water.days?.[waterDayKey(now)] || []).reduce((s, l) => s + Number(l.volume || 0), 0)
+}
 
-  chrome.alarms.create("reminderAlarm", {
-    when: endTime,
-  });
+async function updateBadge() {
+  const { habits, settings } = await load()
+  const left = habitsLeft(habits)
+  const show = settings.showBadge !== false && left > 0
+  await chrome.action.setBadgeBackgroundColor({ color: "#9d78fa" })
+  await chrome.action.setBadgeText({ text: show ? String(left) : "" })
+}
 
-  const timerData = {
+function nextAt(hour) {
+  const d = new Date()
+  d.setHours(hour, 0, 0, 0)
+  if (d <= new Date()) d.setDate(d.getDate() + 1)
+  return d.getTime()
+}
+
+async function scheduleAlarms() {
+  const { settings } = await load()
+  const r = settings.reminders || {}
+  await chrome.alarms.clear(ALARM.habits)
+  await chrome.alarms.clear(ALARM.water)
+  if (r.habits === "daily") chrome.alarms.create(ALARM.habits, { when: nextAt(20), periodInMinutes: 1440 })
+  if (r.habits === "hourly") chrome.alarms.create(ALARM.habits, { delayInMinutes: 60, periodInMinutes: 60 })
+  const mins = Number(r.water)
+  if (mins > 0) chrome.alarms.create(ALARM.water, { delayInMinutes: mins, periodInMinutes: mins })
+  // Refresh the badge after midnight and on a slow heartbeat.
+  chrome.alarms.create(ALARM.tick, { when: nextAt(0) + 5000, periodInMinutes: 60 })
+}
+
+function notify(id, title, message) {
+  chrome.notifications.create(id, {
+    type: "basic",
+    iconUrl: "icons/icon128.png",
     title,
     message,
-    duration,
-    startTime,
-    endTime,
-    isActive: true,
-    timeRemaining: duration,
-    notificationShown: false,
-  };
-
-  chrome.storage.local.set({ timerData }, () => {
-    sendResponse({ status: "Timer started" });
-  });
+    priority: 1,
+  })
 }
 
-function getTimerStatus(sendResponse) {
-  chrome.storage.local.get(["timerData"], (result) => {
-    if (result.timerData && result.timerData.isActive) {
-      const now = Date.now();
-      const timeRemaining = Math.max(
-        0,
-        Math.floor((result.timerData.endTime - now) / 1000)
-      );
-      const isActive = timeRemaining > 0;
-
-      const updatedTimerData = {
-        ...result.timerData,
-        timeRemaining,
-        isActive,
-      };
-
-      chrome.storage.local.set({ timerData: updatedTimerData }, () => {
-        sendResponse({
-          timeRemaining,
-          isActive,
-          shouldShowNotification:
-            !isActive && !result.timerData.notificationShown,
-        });
-      });
-    } else {
-      sendResponse({
-        timeRemaining: 0,
-        isActive: false,
-        shouldShowNotification: false,
-      });
-    }
-  });
-}
-
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === "reminderAlarm") {
-    chrome.storage.local.get(["timerData"], (result) => {
-      if (result.timerData && !result.timerData.notificationShown) {
-        showNotification(result.timerData.title, result.timerData.message);
-      }
-    });
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name === ALARM.tick) return updateBadge()
+  const { habits, water } = await load()
+  if (alarm.name === ALARM.habits) {
+    const left = habitsLeft(habits)
+    if (left > 0) notify("lt-habits", "Life Tracker", `${left} habit${left === 1 ? "" : "s"} left today. Keep the streak going! 🔥`)
   }
-});
-
-function showNotification(title, message) {
-  chrome.notifications.create({
-    type: "basic",
-    iconUrl: "icons/bell.png",
-    title: title,
-    message: message,
-    requireInteraction: true,
-    buttons: [
-      {
-        title: "Got It! 👍",
-      },
-    ],
-  });
-
-  chrome.storage.local.get(["timerData"], (result) => {
-    if (result.timerData) {
-      const updatedTimerData = {
-        ...result.timerData,
-        isActive: false,
-        timeRemaining: 0,
-        notificationShown: true,
-      };
-      chrome.storage.local.set({ timerData: updatedTimerData });
+  if (alarm.name === ALARM.water) {
+    const hour = new Date().getHours()
+    const total = waterToday(water)
+    const goal = water.goal || 2000
+    if (hour >= 8 && hour < 22 && total < goal) {
+      notify("lt-water", "Time for some water 💧", `${(total / 1000).toFixed(1)} of ${(goal / 1000).toFixed(1)} L so far today.`)
     }
-  });
-}
+  }
+})
 
-chrome.notifications.onButtonClicked.addListener((notificationId) => {
-  chrome.notifications.clear(notificationId);
-});
+chrome.notifications.onClicked.addListener((id) => {
+  chrome.notifications.clear(id)
+  chrome.tabs.create({ url: chrome.runtime.getURL("index.html?view=tab") })
+})
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "local") return
+  if (KEYS.habits in changes || KEYS.settings in changes) updateBadge()
+  if (KEYS.settings in changes) {
+    const before = changes[KEYS.settings].oldValue?.reminders
+    const after = changes[KEYS.settings].newValue?.reminders
+    if (JSON.stringify(before) !== JSON.stringify(after)) scheduleAlarms()
+  }
+})
 
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.local.get(["timerData"], (result) => {
-    if (result.timerData && result.timerData.isActive) {
-      const now = Date.now();
-      if (result.timerData.endTime > now) {
-        chrome.alarms.create("reminderAlarm", {
-          when: result.timerData.endTime,
-        });
-      }
-    }
-  });
-});
+  scheduleAlarms()
+  updateBadge()
+})
+chrome.runtime.onStartup.addListener(() => {
+  scheduleAlarms()
+  updateBadge()
+})

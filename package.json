@@ -1,26 +1,25 @@
 {
-  "name": "hydration-hero",
+  "name": "life-tracker",
   "private": true,
-  "version": "0.0.0",
+  "version": "2.0.0",
+  "description": "Life Tracker: a private Chrome extension for daily habits, water intake and workouts, with a front/back muscle map.",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "test": "vitest run",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource-variable/manrope": "^5.1.0",
     "canvas-confetti": "^1.9.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-icons": "^5.3.0",
-    "vite-plugin-static-copy": "^2.0.0"
+    "react-icons": "^5.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",
-    "@types/chrome": "^0.1.36",
-    "@types/react": "^18.3.10",
-    "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.2",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.11.1",
@@ -30,6 +29,7 @@
     "globals": "^15.9.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
-    "vite": "^5.4.8"
+    "vite": "^5.4.8",
+    "vitest": "^2.1.8"
   }
 }

@@ -1,24 +1,26 @@
 {
   "manifest_version": 3,
-  "name": "Hydration Hero",
-  "version": "1.2.6",
-  "description": "Track your water intake and stay hydrated! ✨",
+  "name": "Life Tracker",
+  "short_name": "Life Tracker",
+  "version": "2.0.0",
+  "description": "Track daily habits, water intake and workouts (with a front/back muscle map) in one private popup.",
   "action": {
     "default_popup": "index.html",
+    "default_title": "Life Tracker",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
-      "192": "icons/icon192.png",
-      "512": "icons/icon512.png"
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
     }
   },
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
-    "192": "icons/icon192.png",
-    "512": "icons/icon512.png"
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   },
-  "permissions": ["storage", "notifications", "alarms"],
+  "permissions": ["storage", "unlimitedStorage", "notifications", "alarms"],
   "background": {
     "service_worker": "background.js"
   }

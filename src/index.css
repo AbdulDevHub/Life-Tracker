@@ -1,3 +1,86 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Colours are RGB triplets so Tailwind opacity modifiers work (bg-accent/20). */
+:root {
+  --bg: 244 244 246;
+  --surface: 255 255 255;
+  --raised: 236 236 241;
+  --line: 222 222 229;
+  --ink: 24 24 28;
+  --muted: 100 100 114;
+  --habit: 139 92 246;
+  --water: 22 160 214;
+  --lift: 234 108 20;
+  --danger: 220 38 38;
+  --accent: var(--habit);
+  color-scheme: light;
+}
+
+.dark {
+  --bg: 17 17 20;
+  --surface: 27 27 32;
+  --raised: 38 38 45;
+  --line: 52 52 61;
+  --ink: 236 236 241;
+  --muted: 150 150 164;
+  --habit: 157 120 250;
+  --water: 28 171 227;
+  --lift: 249 128 40;
+  --danger: 248 90 90;
+  color-scheme: dark;
+}
+
+html,
+body {
+  margin: 0;
+  background: rgb(var(--bg));
+  color: rgb(var(--ink));
+  font-family: "Manrope Variable", Manrope, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Popup size; ?view=tab adds .full and lets the page fill the browser tab. */
+html:not(.full) body {
+  width: 800px;
+  max-height: 600px;
+  overflow: hidden;
+}
+
+html.full body {
+  min-height: 100vh;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Thin scrollbars that follow the theme. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--line)) transparent;
+}
+
+@layer components {
+  .field {
+    @apply w-full rounded-lg border border-line bg-raised px-3 py-2 text-sm text-ink placeholder:text-muted/70 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30;
+  }
+  .label {
+    @apply text-[11px] font-semibold uppercase tracking-wider text-muted;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
