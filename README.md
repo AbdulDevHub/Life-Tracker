@@ -1,212 +1,110 @@
-# **Hydration Hero**
+# Life Tracker: Habit, Water and Workout Tracker Chrome Extension
 
-Hydration Hero is a lightweight Chrome extension for tracking daily water intake and staying on top of your hydration goals—right from your browser.
+**Life Tracker** is a free, private Chrome extension that tracks your daily habits, water intake and gym workouts in one popup. It has streaks, a hydration goal, and a front/back muscle map that lights up the muscles you trained. No account, no ads, no analytics: your data stays in your browser.
 
 <p align="center">
-    <img src="Demo.gif" alt="Hydration Tracker GIF" style="width: 60%; height: auto;">
+  <img src="docs/screenshot.png" alt="Life Tracker Chrome extension showing the Habits, Water and Exercise tabs with a muscle map" width="100%">
 </p>
 
----
+> Formerly **Hydration Hero**. Version 2 merges the water tracker with a habit tracker and adds workout tracking.
 
-## <a name="one"></a>❓ The Problem
+## Contents
 
-Many people forget to stay hydrated while working or studying on a computer. Mobile apps are often too generic, cluttered, and easy to ignore when you're focused on your screen.
+- [Project Overview](#project-overview)
+- [Features](#features)
+- [Install](#install)
+- [Privacy](#privacy)
+- [Development](#development)
+- [Project structure](#project-structure)
+- [License](#license)
 
-A Chrome extension is more efficient—keeping hydration tracking just one click away without switching devices or breaking your workflow.
+## Project Overview
 
----
+Habit apps, water apps and workout apps usually live on your phone, so they get ignored while you work at a computer. Life Tracker puts all three one click away in the Chrome toolbar, each on its own tab so no screen gets cluttered.
 
-## <a name="two"></a>🏛️ Project Architecture
+It started as two separate extensions: Hydration Hero (a water tracker) and a habit tracker from the Chrome Web Store. Version 2 rebuilds the habit tracker in the same codebase with a wide, landscape popup, gives all three tabs one shared design, and adds an exercise log whose muscle map shows at a glance which muscles you have trained and which you have skipped. Data is saved on your device only, and a backup file lets you move it between browsers.
 
-### Project Structure
+## Features
 
-```
-src/
-├── components/
-│   ├── DrinkButtons.jsx          # All action buttons (Log, Reset, Save, Settings)
-│   ├── DrinkLogs.jsx              # Drink history with timestamps and totals
-│   ├── DrinkSettings.jsx          # Daily goal configuration and reset controls
-│   ├── DrinkModals.jsx            # Modal wrappers for logs and settings
-│   ├── DrinkHeader.jsx            # Extension header component
-│   ├── DrinkProgressCard.jsx      # Visual progress indicator
-│   ├── LogADrink.jsx              # Main drink logging interface
-│   ├── VolumeSelection.jsx        # Volume input controls
-│   └── utils/
-│       └── timeUtils.js           # Timestamp formatting utilities
-└── pages/
-    └── DrinkPage.jsx              # Main application page
-```
+### ✅ Habits
+- A landscape month grid (habits × days) for checking off daily habits, with emoji names and a colour per habit
+- Month, week and today completion rings, plus an active-streaks panel
+- Current and best streaks, plus streak badges at 7, 21, 30, 66 and 100 days (with confetti)
+- Habit lists are kept per month, so past months keep the habits you had then
+- A toolbar badge shows how many habits are left today
+- Optional reminders at 8 PM or every hour, only while something is still unchecked
 
-### Chrome Extension APIs & Required Permissions
+### 💧 Water
+- Animated progress tank toward a daily goal (250 ml to 10 L)
+- One-tap glass sizes (150 to 750 ml) or any custom amount
+- Today's log with undo, and a 7-day history chart against your goal
+- The day resets at 3 AM, so late-night glasses count for the evening before
+- Optional reminders every 1 or 2 hours between 8 AM and 10 PM
 
-Hydration Hero utilizes the following Chrome APIs:
+### 💪 Exercise
+- Log exercises with sets, reps and weight (kg or lb)
+- Front and back male muscle map that highlights the muscles you worked today or over the last 7 days, shaded by sets
+- 60+ built-in exercises that fill in their muscle groups automatically; your own exercises are remembered
+- Click a muscle to filter your history, and re-log a past exercise in one click
 
-- **Storage API (`storage` permission)**: Stores hydration logs, daily goals, and user preferences in local storage. Data persists across browser sessions while staying completely private on your device.
+### General
+- Dark and light themes, and one design shared by all three tabs
+- Open in a full browser tab for a bigger view
+- Export all data to a JSON backup file, and import it again (merge or replace)
 
----
+## Install
 
-## <a name="three"></a>🌟 Key Features
-
-### **Hydration Tracker**
-
-- Log water intake with customizable volumes (50ml - 1000ml)
-- Track progress toward daily hydration goals
-- View timestamped drink logs with "time ago" formatting
-- Visual progress indicator showing daily completion percentage
-- Automatic daily reset at midnight
-
-### **Customizable Settings**
-
-- Set personalized daily hydration goals (500ml - 10,000ml)
-- Manual reset option for starting fresh anytime
-- Clean, intuitive settings interface
-
-### **Free, Lightweight & Privacy-Focused**
-
-- **Lightweight & Efficient**: Runs smoothly without slowing down your browser
-- **No Account Required**: Use all features without signing up
-- **No Data Tracking**: Your data stays on your device (local storage only)
-- **Completely Free**: No hidden fees, subscriptions, or in-app purchases
-- **Open Source**: Fully transparent codebase on GitHub
-
----
-
-## <a name="five"></a>⚙️ Installation & Setup
-
-### **1. Clone the repository:**
+Life Tracker is not on the Chrome Web Store yet. Load it from source:
 
 ```bash
-git clone https://github.com/AbdulDevHub/Hydration-Hero.git
-cd Hydration-Hero
-```
-
-### **2. Install dependencies:**
-
-```bash
+git clone https://github.com/AbdulDevHub/Life-Tracker.git
+cd Life-Tracker
 pnpm install
+pnpm build
 ```
 
-### **3. Build the extension:**
+1. Open `chrome://extensions` and switch on **Developer mode** (top right).
+2. Click **Load unpacked** and pick the `build` folder.
+3. Pin Life Tracker to the toolbar.
+
+To update later, pull the latest code, run `pnpm build` again, and click the reload icon on the extension card. Your data is kept.
+
+
+## Privacy
+
+- Everything is stored in `chrome.storage.local` on your device. Nothing is sent anywhere.
+- Permissions: `storage` and `unlimitedStorage` (your data), `alarms` and `notifications` (reminders and the badge). It does not read the pages you visit.
+
+## Development
 
 ```bash
-pnpm run build
+pnpm dev      # app in a normal browser tab at localhost:5173 (uses localStorage)
+pnpm test     # unit tests (import converter, streak logic)
+pnpm lint     # ESLint
+pnpm build    # production extension in build/
 ```
 
-### **4. Load the extension in Chrome:**
+Open `http://localhost:5173/?demo=1&tab=exercise` to load sample data. You can add `&theme=light` or `&view=tab`.
 
-1. Open Google Chrome and navigate to `chrome://extensions/`
-2. Enable **Developer Mode** (toggle in the top-right corner)
-3. Click **Load unpacked**
-4. Select the **build** folder inside your project
-5. Pin the extension to your toolbar for easy access
+Built with React 18, Vite 5, Tailwind CSS 3, React Icons (Lucide), canvas-confetti and the Manrope font. Chrome Manifest V3.
 
----
+## Project structure
 
-## <a name="six"></a>🛠️ Technologies Used
-
-- **React** - UI framework
-- **Vite** - Build tool and dev server
-- **Tailwind CSS** - Utility-first styling
-- **React Icons** - Icon library (Lucide, Font Awesome, GoGear)
-- **Chrome Extension APIs** - Storage API for data persistence
-
----
-
-## <a name="seven"></a>📝 Development
-
-### Available Scripts
-
-```bash
-pnpm run dev      # Start development server
-pnpm run build    # Build for production
-pnpm run preview  # Preview production build
+```
+public/
+  manifest.json        Manifest V3
+  background.js        Service worker: toolbar badge and reminders
+  icons/               Logo (logo.svg is the master)
+src/
+  App.jsx              Header, tab bar, settings
+  components/          Shared UI kit, settings sheet, logo
+  features/habits/     Habit grid, editor, streak logic
+  features/water/      Water tank, glass sizes, history
+  features/exercise/   Log form, body map SVG, exercise catalogue
+  lib/                 Storage, dates, import/export, demo data
+docs/                  Screenshot
 ```
 
-### Code Organization
+## License
 
-This project uses a consolidated component structure for better maintainability:
-
-- **Named exports** for related components (buttons, modals)
-- **Internal sub-components** to reduce file fragmentation
-- **Utility functions** organized in a dedicated utils folder
-
----
-
-## <a name="docker"></a>🐳 Docker
-
-This project is Dockerized for a consistent development and build experience — no need to install Node or pnpm locally.
-
-### How it works
-
-Since this is a Chrome extension (not a web server), Docker isn't used to *run* the extension. Instead it serves two purposes:
-
-- **Build**: Produce the `build/` folder output inside a container, then copy it to your machine
-- **Dev**: Run the Vite dev server inside a container with live file syncing, so you can develop without a local Node environment
-
-The `Dockerfile` defines the environment (Node + pnpm + dependencies). The `docker-compose.yml` defines two named services — `dev` and `build` — so you can target either one on demand.
-
-### Key concepts used here
-
-- **Images vs Containers**: `docker build` creates an image (a frozen snapshot of the environment). `docker run` spins up a temporary container from that image, does its job, and exits. The image is the thing you share; containers are disposable instances of it.
-- **Layer caching**: The Dockerfile copies `package.json` and `pnpm-lock.yaml` before the source code. Docker caches each step, so dependency installs are only re-run when those files change — not on every source code edit.
-- **Volume mounts** (`-v`): Links a folder on your real machine to a path inside the container. Used so the `build/` output written inside the container appears on your host machine, and so source file edits during `dev` are reflected inside the container in real time.
-- **`docker compose up <service>`**: Starts only the named service. `docker compose up dev` starts the dev server; `docker compose up` would start all services simultaneously. Compose also auto-rebuilds the image if the Dockerfile changed, so you rarely need to run `docker build` manually.
-- **Polling for hot reload on Windows**: Vite's file watcher uses native OS events, which don't work across the Windows/Linux boundary when files are volume-mounted. Setting `usePolling: true` in `vite.config.js` tells Vite to check for file changes on a timer instead, which works correctly.
-
-### Docker commands
-
-**Development** (live reloading dev server at `localhost:5173`):
-
-```bash
-docker compose up dev
-```
-
-**Production build** (outputs the `build/` folder to your project):
-
-```bash
-# Windows PowerShell
-docker run --rm -v "${PWD}/build:/app/build" hydration-hero
-
-# Mac/Linux
-docker run --rm -v "$(pwd)/build:/app/build" hydration-hero
-```
-
-Or with compose:
-
-```bash
-docker compose run --rm build
-```
-
-**Share the image without sharing source code:**
-
-```bash
-# Export to a file
-docker save hydration-hero > hydration-hero.tar
-
-# Recipient imports and runs it — only Docker required, no Node/pnpm needed
-docker load < hydration-hero.tar
-docker run --rm -v "${PWD}/build:/app/build" hydration-hero
-```
-
----
-
-## <a name="four"></a>🤝 Contributing
-
-This project is open for contributions! Feel free to submit issues and pull requests.
-
-### Ways to Contribute
-
-- Report bugs or suggest features via GitHub Issues
-- Submit pull requests with improvements or fixes
-- Improve documentation
-- Share feedback on UX/UI
-
----
-
-## <a name="eight"></a>📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
----
-
-**Stay hydrated! 💧**
+[CC BY-NC 4.0](LICENSE.md): free to use and adapt for non-commercial purposes, with credit.
