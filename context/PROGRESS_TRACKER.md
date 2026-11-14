@@ -16,10 +16,14 @@ Update "Current state", "In progress" and "Next steps" after meaningful work, an
 - Nothing open.
 
 ## Next steps
-- When the user approves: commit, rename GitHub repo Hydration-Hero → Life-Tracker, push, set description + topics.
+- User: upload `docs/social-preview.png` in GitHub Settings → General → Social preview (no API for it).
+- Optional: publish to the Chrome Web Store, then add the store link as the repo homepage.
 - Ideas the user may pick: sleep tab, mood/journal tab, focus timer, weekly review; exercise personal records, rest timer, workout templates.
 
 ## Session log
+### 2026-11-13 (latest)
+- Renamed GitHub repo Hydration-Hero → Life-Tracker (old URL redirects), pushed, set SEO description and 19 topics, added `docs/social-preview.png`.
+
 ### 2026-11-13 (later)
 - Switched to a landscape layout at the user's request (they preferred the original Habit Tracker's wide month grid). Habits: full month grid + rings + streaks. Water/Exercise: three columns.
 - Removed the one-time old-Habit-Tracker import converter, its guide and the old extension copy after the user confirmed the migration.
