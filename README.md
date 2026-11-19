@@ -27,11 +27,12 @@ It started as two separate extensions: Hydration Hero (a water tracker) and a ha
 ## Features
 
 ### ✅ Habits
-- A landscape month grid (habits × days) for checking off daily habits, with emoji names and a colour per habit
+- A landscape month grid (habits × days) for checking off daily habits, with emoji names and a colour per habit; future days can be ticked ahead too
 - Month, week and today completion rings, plus an active-streaks panel
-- Current and best streaks, plus streak badges at 7, 21, 30, 66 and 100 days (with confetti)
+- Current and best streaks, plus streak badges at 7, 21, 30, 66 and 100 days (with confetti); badges count your whole history and show on the active-streaks panel
 - Habit lists are kept per month, so past months keep the habits you had then
-- A toolbar badge shows how many habits are left today
+- A compact two-column editor to rename, recolour, reorder or remove a habit and see its badges
+- A cyan toolbar badge shows how many habits are left today
 - Optional reminders at 8 PM or every hour, only while something is still unchecked
 
 ### 💧 Water
@@ -46,9 +47,13 @@ It started as two separate extensions: Hydration Hero (a water tracker) and a ha
 - Front and back male muscle map that highlights the muscles you worked today or over the last 7 days, shaded by sets
 - 60+ built-in exercises that fill in their muscle groups automatically; your own exercises are remembered
 - Click a muscle to filter your history, and re-log a past exercise in one click
+- A Favourites / History / Stats switch beside the log form keeps it compact
+- Stats: active days, sets and weight lifted per week, month or year, with a sets chart and your top exercises; step back through past periods
+- Reset today clears the day's log in two clicks
+- Star your weekly exercises as favourites and log each one in one click, with your latest sets, reps and weight
 
 ### General
-- Dark and light themes, and one design shared by all three tabs
+- Dark and light themes (in Settings), and one design shared by all three tabs
 - Open in a full browser tab for a bigger view
 - Export all data to a JSON backup file, and import it again (merge or replace)
 
@@ -79,14 +84,14 @@ To update later, pull the latest code, run `pnpm build` again, and click the rel
 
 ```bash
 pnpm dev      # app in a normal browser tab at localhost:5173 (uses localStorage)
-pnpm test     # unit tests (import converter, streak logic)
+pnpm test     # unit tests (import, streaks, badges, favourites, exercise stats)
 pnpm lint     # ESLint
 pnpm build    # production extension in build/
 ```
 
 Open `http://localhost:5173/?demo=1&tab=exercise` to load sample data. You can add `&theme=light` or `&view=tab`.
 
-Built with React 18, Vite 5, Tailwind CSS 3, React Icons (Lucide), canvas-confetti and the Manrope font. Chrome Manifest V3.
+Built with React 18, Vite 5, Tailwind CSS 3, React Icons (Lucide), canvas-confetti and the Manrope font. Chrome Manifest V3. Developed with [Claude Code](https://claude.com/claude-code).
 
 ## Project structure
 
@@ -100,9 +105,9 @@ src/
   components/          Shared UI kit, settings sheet, logo
   features/habits/     Habit grid, editor, streak logic
   features/water/      Water tank, glass sizes, history
-  features/exercise/   Log form, body map SVG, exercise catalogue
+  features/exercise/   Log form, body map SVG, catalogue, favourites, stats
   lib/                 Storage, dates, import/export, demo data
-docs/                  Screenshot
+docs/                  Screenshot and social preview
 ```
 
 ## License
