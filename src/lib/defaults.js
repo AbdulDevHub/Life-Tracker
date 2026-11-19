@@ -1,4 +1,5 @@
-export const SCHEMA_VERSION = 1
+// 2: exercise.favorites added
+export const SCHEMA_VERSION = 2
 
 export const DEFAULT_HABIT_COLOR = "#8b5cf6"
 
@@ -22,6 +23,8 @@ export const defaultExercise = () => ({
   unit: "kg",
   // [{ id, day, timestamp, name, muscles: [], sets, reps, weight }]
   entries: [],
+  // [{ name, muscles: [], sets, reps, weight }] logged in one click; see features/exercise/favorites.js
+  favorites: [],
 })
 
 export const defaultSettings = () => ({

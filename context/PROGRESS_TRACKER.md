@@ -6,9 +6,9 @@ Update "Current state", "In progress" and "Next steps" after meaningful work, an
 ## Current state
 - v2.0.0 builds and passes lint + unit tests. The user's habit history has been imported and checked.
 - Landscape popup (800 px wide, height follows content).
-- Habits: month grid (habits × days), month/week/today rings, active-streaks panel, streak badges (7/21/30/66/100), editor (rename, colour, reorder, remove from month onward).
+- Habits: month grid (habits × days), month/week/today rings, active-streaks panel, streak badges (7/21/30/66/100, earned from best streak, shown in the editor and on Active Streaks rows), editor (rename, colour, reorder, remove from month onward).
 - Water: progress tank, glass presets + custom, today log with delete, 7-day chart, 3 AM rollover, goal editing.
-- Exercise: front/back SVG muscle map (today / 7 days), log form with a 60+ exercise catalogue, history grouped by day with filter and re-log.
+- Exercise: front/back SVG muscle map (today / 7 days), log form with a 60+ exercise catalogue, history grouped by day with filter and re-log, Favourites / History / Stats toggle (week/month/year totals, sets chart, top exercises; logic in `features/exercise/stats.js`), reset today, favourite exercises (one-click log using the latest values).
 - Settings: theme, toolbar badge, habit/water reminders, kg/lb, JSON backup export/import (merge or replace), reset.
 - Service worker: badge = habits left today; alarms for reminders.
 
@@ -21,6 +21,26 @@ Update "Current state", "In progress" and "Next steps" after meaningful work, an
 - Ideas the user may pick: sleep tab, mood/journal tab, focus timer, weekly review; exercise personal records, rest timer, workout templates.
 
 ## Session log
+### 2026-11-19
+- Exercise: body map enlarged (viewBox cropped to the figure, fills the left card), Favourites/History switch centred, "Reset today" button (click twice) clears today's entries.
+- Removed the header light/dark toggle; theme lives only in Settings.
+- Habit grid row gap tightened (6 px → 4 px).
+- Toolbar badge now cyan with dark text (was purple). Water/Exercise body height 468 → 424 px.
+- Habit editor: wide two-column modal (name+colour / streaks+badges), actions and Save on one footer row; no scrolling.
+- Streak badges now come from best streak up to today (`earnedBadges`), so imported history counts; Active Streaks rows show the current badge (🔥30). Favourites/History/Stats switch spans the card.
+- Exercise Stats view: one cycling Week → Month → Year button with prev/next, tiles (days, sets, volume or reps) with change vs the previous period, sets chart that fills the card (values on bars, best day), top 3 exercises.
+
+### 2026-11-18 (later)
+- User imported their old Habit Tracker export through a temporary converter, then asked to remove it again (and the txt). Import reads Life Tracker backups only.
+- Habits: future days can be ticked ahead (streak badges still only count up to today).
+- Exercise layout slimmed: middle card is just the log form (muscles collapse to a one-line summary with Edit once filled in); right card toggles Favourites / History.
+- Exercise favourites: `exercise.favorites` (SCHEMA_VERSION 2), logic in `features/exercise/favorites.js`. Star from the form or a history row; the Favourites list logs in one click with the latest entry's sets/reps/weight; ✓ when done today.
+
+### 2026-11-18
+- Added Archer push-up, Chest-supported row, Forearm curl, Power over (Athlean-X upper-abs move) to the catalogue (Bulgarian split squat already existed).
+- Body map abs redrawn as a six-pack (three blocks per side + lower abs).
+- Settings condensed: wider two-column modal, weight unit moved into General, import box hidden behind an Import button.
+
 ### 2026-11-13 (latest)
 - Renamed GitHub repo Hydration-Hero → Life-Tracker (old URL redirects), pushed, set SEO description and 19 topics, added `docs/social-preview.png`.
 

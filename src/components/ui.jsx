@@ -91,7 +91,7 @@ export function Modal({ open, onClose, title, children, wide }) {
         aria-label={title}
         className={cx(
           "flex max-h-full w-full animate-fadeIn flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-2xl",
-          wide ? "max-w-lg" : "max-w-sm",
+          wide ? "max-w-2xl" : "max-w-sm",
         )}
       >
         <div className="flex items-center justify-between border-b border-line px-4 py-3">

@@ -38,7 +38,8 @@ async function updateBadge() {
   const { habits, settings } = await load()
   const left = habitsLeft(habits)
   const show = settings.showBadge !== false && left > 0
-  await chrome.action.setBadgeBackgroundColor({ color: "#9d78fa" })
+  await chrome.action.setBadgeBackgroundColor({ color: "#22d3ee" })
+  await chrome.action.setBadgeTextColor?.({ color: "#0b1220" })
   await chrome.action.setBadgeText({ text: show ? String(left) : "" })
 }
 

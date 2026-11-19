@@ -135,7 +135,7 @@ export default function WaterTab({ isFull }) {
   if (!loaded) return null
 
   return (
-    <div className={cx("grid grid-cols-[230px_minmax(0,1fr)_230px] gap-3", isFull ? "min-h-[460px]" : "h-[468px]")}>
+    <div className={cx("grid grid-cols-[230px_minmax(0,1fr)_230px] gap-3", isFull ? "min-h-[460px]" : "h-[424px]")}>
       <ProgressTank total={total} goal={water.goal} pulse={pulse} />
       <div className="flex min-h-0 flex-col gap-3">
 

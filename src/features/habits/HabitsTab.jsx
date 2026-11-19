@@ -8,7 +8,7 @@ import { useStored } from "../../lib/useStore"
 import { celebrate, cx, toast } from "../../lib/util"
 import { HABIT_COLORS } from "./colors"
 import HabitEditor from "./HabitEditor"
-import { addHabit, currentStreak, habitsForMonth, isChecked, newMilestones, toggleCheck } from "./habitLogic"
+import { addHabit, badgeFor, currentStreak, habitsForMonth, isChecked, newMilestones, toggleCheck } from "./habitLogic"
 
 const SUGGESTIONS = ["📖 Read 10 pages", "🧘 Stretch", "🛌 Sleep by 11", "🚶 10k steps"]
 
@@ -63,7 +63,8 @@ export default function HabitsTab({ isFull }) {
     const wasChecked = isChecked(habits, day, habit.id)
     setHabits((h) => {
       let next = toggleCheck(h, day, habit.id)
-      if (!wasChecked) {
+      // Future days can be ticked ahead, but streak badges only count up to today.
+      if (!wasChecked && day <= today) {
         const reached = newMilestones(next, habit.id, day)
         if (reached.length) {
           next = {
@@ -143,6 +144,15 @@ export default function HabitsTab({ isFull }) {
                   <span className="w-14 shrink-0 text-right text-[11px] font-extrabold">
                     {n} {n === 1 ? "day" : "days"}
                   </span>
+                  <span
+                    className={cx(
+                      "w-8 shrink-0 rounded-full py-px text-center text-[9px] font-extrabold",
+                      badgeFor(n) ? "bg-lift/20 text-lift" : "text-transparent",
+                    )}
+                    title={badgeFor(n) ? `${badgeFor(n)}-day streak badge` : undefined}
+                  >
+                    {badgeFor(n) ? `🔥${badgeFor(n)}` : ""}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -219,7 +229,7 @@ export default function HabitsTab({ isFull }) {
           </EmptyState>
         ) : (
           <div className="-mr-1 mt-1.5 max-h-[300px] overflow-y-auto pr-1">
-            <div className="grid items-center gap-x-[3px] gap-y-1.5" style={gridStyle}>
+            <div className="grid items-center gap-x-[3px] gap-y-1" style={gridStyle}>
               {list.map((h) => (
                 <Row key={h.id} habit={h} days={days} today={today} habits={habits} onToggle={toggle} onEdit={() => setEditing(h)} />
               ))}
@@ -248,7 +258,6 @@ function Row({ habit, days, today, habits, onToggle, onEdit }) {
           <button
             key={k}
             type="button"
-            disabled={future}
             onClick={() => onToggle(habit, k)}
             aria-pressed={checked}
             aria-label={`${habit.title}, ${d.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}`}
@@ -258,7 +267,7 @@ function Row({ habit, days, today, habits, onToggle, onEdit }) {
               "grid aspect-square w-full place-items-center rounded-[5px] border text-white transition",
               checked ? "animate-pop" : "border-transparent bg-raised hover:border-muted/60",
               k === today && !checked && "border-accent/80 ring-1 ring-accent/40",
-              future && "opacity-40",
+              future && !checked && "opacity-60",
             )}
           >
             {checked && <LuCheck strokeWidth={4} className="h-2.5 w-2.5" />}

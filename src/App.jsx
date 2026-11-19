@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react"
-import { LuDroplet, LuDumbbell, LuExternalLink, LuListChecks, LuMoon, LuSettings, LuSun } from "react-icons/lu"
+import { LuDroplet, LuDumbbell, LuExternalLink, LuListChecks, LuSettings } from "react-icons/lu"
 import Logo from "./components/Logo"
 import SettingsSheet from "./components/SettingsSheet"
 import { IconButton, Toaster } from "./components/ui"
@@ -28,8 +28,6 @@ export default function App({ isFull }) {
   }, [settings.theme])
 
   const setTab = (id) => setSettings((s) => ({ ...s, tab: id }))
-  const toggleTheme = () =>
-    setSettings((s) => ({ ...s, theme: s.theme === "light" ? "dark" : "light" }))
 
   const openFull = () => {
     const url = (globalThis.chrome?.runtime?.getURL?.("index.html") ?? "index.html") + "?view=tab"
@@ -81,9 +79,6 @@ export default function App({ isFull }) {
               <LuExternalLink />
             </IconButton>
           )}
-          <IconButton label={settings.theme === "light" ? "Dark mode" : "Light mode"} onClick={toggleTheme}>
-            {settings.theme === "light" ? <LuMoon /> : <LuSun />}
-          </IconButton>
           <IconButton label="Settings" onClick={() => setShowSettings(true)}>
             <LuSettings />
           </IconButton>

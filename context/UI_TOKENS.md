@@ -23,7 +23,7 @@ Use these tokens instead of raw hex values in components. Update this file when 
 - Logo: `public/icons/logo.svg`; three stroke segments in the tab colours. Regenerate PNGs (16/32/48/128) from it with sharp.
 
 ## Rules
-- Popup 800 px wide, height follows content (max 600). Habits = stats card + month grid (habit names column + one column per day). Water and Exercise = three columns at 468 px tall. No page scroll.
+- Popup 800 px wide, height follows content (max 600). Habits = stats card + month grid (habit names column + one column per day). Water and Exercise = three columns at 424 px tall. No page scroll.
 - Each tab = summary card on top, input card, then list/history card.
 - Hover-only actions (delete, re-log) must also show on keyboard focus.
 - Respect `prefers-reduced-motion` (global rule in `index.css`; confetti uses `disableForReducedMotion`).

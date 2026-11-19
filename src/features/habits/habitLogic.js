@@ -116,9 +116,9 @@ export function remainingToday(habits, now = new Date()) {
 }
 
 /** Longest run of consecutive checked days for a habit. */
-export function bestStreak(habits, id) {
+export function bestStreak(habits, id, upTo = "9999-12-31") {
   const days = Object.keys(habits.checks)
-    .filter((d) => habits.checks[d][id])
+    .filter((d) => d <= upTo && habits.checks[d][id])
     .sort()
   let best = 0
   let run = 0
@@ -130,3 +130,13 @@ export function bestStreak(habits, id) {
   }
   return best
 }
+
+/** Streak badges a habit has earned: any milestone its best streak (up to today) reached, plus ones stored live. */
+export function earnedBadges(habits, id, today = dayKey()) {
+  const best = bestStreak(habits, id, today)
+  const stored = new Set(habits.achievements.filter((a) => a.uuid === id).map((a) => a.chainLength))
+  return MILESTONES.filter((m) => best >= m || stored.has(m))
+}
+
+/** Highest milestone a streak of n days has passed, or 0. */
+export const badgeFor = (n) => MILESTONES.filter((m) => n >= m).pop() || 0

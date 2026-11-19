@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { LuDumbbell, LuPlus, LuRotateCcw, LuX } from "react-icons/lu"
+import { LuCheck, LuDumbbell, LuPlus, LuRotateCcw, LuStar, LuX } from "react-icons/lu"
 import { Button, Card, EmptyState, Segmented } from "../../components/ui"
 import { addDays, dayKey, parseDay } from "../../lib/dates"
 import { defaultExercise } from "../../lib/defaults"
@@ -8,7 +8,9 @@ import { useStored } from "../../lib/useStore"
 import { cx, toast } from "../../lib/util"
 import { newId } from "../habits/habitLogic"
 import BodyMap from "./BodyMap"
+import ExerciseStats from "./ExerciseStats"
 import { EXERCISES, MUSCLE_LABEL, MUSCLES } from "./catalog"
+import { favoriteValues, isFavorite, toggleFavorite } from "./favorites"
 
 const RANGE = { today: 1, week: 7 }
 // Sets per muscle that count as "fully worked" for the shading.
@@ -28,6 +30,9 @@ export default function ExerciseTab({ isFull }) {
   const [selected, setSelected] = useState(null)
   const [form, setForm] = useState(emptyForm)
   const [showAll, setShowAll] = useState(false)
+  const [editMuscles, setEditMuscles] = useState(false)
+  const [view, setView] = useState("favorites")
+  const [confirmReset, setConfirmReset] = useState(false)
   const today = dayKey()
 
   // Past exercise names (with their last-used muscles) come first in suggestions.
@@ -86,9 +91,41 @@ export default function ExerciseTab({ isFull }) {
     })
     toast(`💪 Logged ${form.name.trim()}`)
     setForm((f) => ({ ...emptyForm, sets: f.sets, reps: f.reps }))
+    setEditMuscles(false)
   }
 
+  const favorites = ex.favorites || []
+  const toggleFav = (template) => {
+    const was = isFavorite(favorites, template.name)
+    setEx((x) => ({ ...x, favorites: toggleFavorite(x.favorites, template) }))
+    toast(was ? `Removed ${template.name.trim()} from favourites` : `⭐ ${template.name.trim()} added to favourites`)
+  }
+  const formTemplate = () => ({
+    name: form.name,
+    muscles: form.muscles,
+    sets: Number(form.sets) || 3,
+    reps: Number(form.reps) || 10,
+    weight: form.weight === "" ? null : Number(form.weight),
+  })
+  const logFavorite = (fav) => {
+    const v = favoriteValues(fav, ex.entries)
+    addEntry(v)
+    toast(`💪 Logged ${v.name}`)
+  }
+  const formIsFav = isFavorite(favorites, form.name)
+  // Muscles collapse to a one-line summary once filled in (from the catalogue or a past entry).
+  const showMuscleGrid = editMuscles || form.muscles.length === 0
+  const loggedToday = new Set(ex.entries.filter((e) => e.day === today).map((e) => e.name.toLowerCase()))
+
   const remove = (id) => setEx((x) => ({ ...x, entries: x.entries.filter((e) => e.id !== id) }))
+
+  const todayCount = ex.entries.filter((e) => e.day === today).length
+  const resetToday = () => {
+    if (!confirmReset) return setConfirmReset(true)
+    setEx((x) => ({ ...x, entries: x.entries.filter((e) => e.day !== today) }))
+    setConfirmReset(false)
+    toast("Cleared today's exercises")
+  }
 
   const visible = ex.entries
     .filter((e) => !selected || e.muscles.includes(selected))
@@ -107,7 +144,7 @@ export default function ExerciseTab({ isFull }) {
   if (!loaded) return null
 
   return (
-    <div className={cx("grid grid-cols-[290px_minmax(0,1fr)_minmax(0,1fr)] gap-3", isFull ? "min-h-[480px] items-start" : "h-[468px]")}>
+    <div className={cx("grid grid-cols-[290px_minmax(0,1fr)_minmax(0,1fr)] gap-3", isFull ? "min-h-[480px] items-start" : "h-[424px]")}>
       <Card className="flex min-h-0 flex-col gap-2 overflow-y-auto">
         <div className="flex items-center justify-between">
           <span className="label">Muscles worked</span>
@@ -142,10 +179,23 @@ export default function ExerciseTab({ isFull }) {
             ))
           )}
         </div>
+        {todayCount > 0 && (
+          <button
+            type="button"
+            onClick={resetToday}
+            onBlur={() => setConfirmReset(false)}
+            className={cx(
+              "mx-auto flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition",
+              confirmReset ? "bg-danger text-white" : "text-muted hover:bg-raised hover:text-danger",
+            )}
+          >
+            <LuRotateCcw /> {confirmReset ? `Delete ${todayCount} ${todayCount === 1 ? "entry" : "entries"}?` : "Reset today"}
+          </button>
+        )}
       </Card>
 
       <div className="contents">
-        <Card className="flex min-h-0 flex-col gap-3 overflow-y-auto">
+        <Card className="flex min-h-0 flex-col overflow-y-auto">
           <form
             className="flex flex-col gap-3"
             onSubmit={(e) => {
@@ -154,15 +204,31 @@ export default function ExerciseTab({ isFull }) {
             }}
           >
             <label className="flex flex-col gap-1.5">
-              <span className="label">Exercise</span>
-              <input
-                className="field"
-                list="lt-exercises"
-                value={form.name}
-                onChange={(e) => onName(e.target.value)}
-                placeholder="e.g. Bench press"
-                maxLength={60}
-              />
+              <span className="label">Log exercise</span>
+              <div className="flex gap-1.5">
+                <input
+                  className="field min-w-0 flex-1"
+                  list="lt-exercises"
+                  value={form.name}
+                  onChange={(e) => onName(e.target.value)}
+                  placeholder="e.g. Bench press"
+                  maxLength={60}
+                />
+                <button
+                  type="button"
+                  disabled={!canAdd}
+                  onClick={() => toggleFav(formTemplate())}
+                  aria-pressed={formIsFav}
+                  className={cx(
+                    "grid w-9 shrink-0 place-items-center rounded-xl bg-raised text-base transition disabled:opacity-40",
+                    formIsFav ? "text-amber-400" : "text-muted hover:text-ink",
+                  )}
+                  title={formIsFav ? "Remove from favourites" : "Add to favourites"}
+                  aria-label="Favourite"
+                >
+                  <LuStar className={formIsFav ? "fill-current" : ""} />
+                </button>
+              </div>
               <datalist id="lt-exercises">
                 {Object.keys(known)
                   .sort()
@@ -173,23 +239,38 @@ export default function ExerciseTab({ isFull }) {
             </label>
 
             <div className="flex flex-col gap-1.5">
-              <span className="label">Muscles</span>
-              <div className="flex flex-wrap gap-1">
-                {MUSCLES.map((m) => (
+              <div className="flex items-center justify-between">
+                <span className="label">Muscles</span>
+                {form.muscles.length > 0 && (
                   <button
-                    key={m.id}
                     type="button"
-                    onClick={() => toggleMuscle(m.id)}
-                    aria-pressed={form.muscles.includes(m.id)}
-                    className={cx(
-                      "rounded-full px-2 py-0.5 text-[11px] font-semibold transition",
-                      form.muscles.includes(m.id) ? "bg-accent text-white" : "bg-raised text-muted hover:text-ink",
-                    )}
+                    onClick={() => setEditMuscles((v) => !v)}
+                    className="text-[11px] font-semibold text-accent"
                   >
-                    {m.label}
+                    {showMuscleGrid ? "Done" : "Edit"}
                   </button>
-                ))}
+                )}
               </div>
+              {showMuscleGrid ? (
+                <div className="flex flex-wrap gap-1">
+                  {MUSCLES.map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => toggleMuscle(m.id)}
+                      aria-pressed={form.muscles.includes(m.id)}
+                      className={cx(
+                        "rounded-full px-2 py-0.5 text-[11px] font-semibold transition",
+                        form.muscles.includes(m.id) ? "bg-accent text-white" : "bg-raised text-muted hover:text-ink",
+                      )}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs font-semibold">{form.muscles.map((m) => MUSCLE_LABEL[m]).join(" · ")}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-3 gap-2">
@@ -219,16 +300,76 @@ export default function ExerciseTab({ isFull }) {
           </form>
         </Card>
 
-        <Card className="flex min-h-0 flex-col p-0">
-          <div className="flex items-center justify-between px-4 pt-3">
-            <span className="label">{selected ? `${MUSCLE_LABEL[selected]} history` : "History"}</span>
-            {selected && (
-              <button type="button" onClick={() => setSelected(null)} className="text-[11px] font-semibold text-accent">
-                Show all
-              </button>
+        <Card className="flex min-h-0 flex-col !p-0">
+          <div className={cx("flex min-h-[28px] items-center gap-2 px-4 pt-4", selected ? "justify-between" : "justify-center")}>
+            {selected ? (
+              <>
+                <span className="label truncate">{MUSCLE_LABEL[selected]} history</span>
+                <button type="button" onClick={() => setSelected(null)} className="text-[11px] font-semibold text-accent">
+                  Show all
+                </button>
+              </>
+            ) : (
+              <Segmented
+                className="w-full [&>button]:flex-1"
+                value={view}
+                onChange={setView}
+                options={[
+                  { value: "favorites", label: "Favourites" },
+                  { value: "history", label: "History" },
+                  { value: "stats", label: "Stats" },
+                ]}
+              />
             )}
           </div>
-          {groups.length === 0 ? (
+          {view === "stats" && !selected ? (
+            <ExerciseStats entries={ex.entries} unit={ex.unit} today={today} />
+          ) : view === "favorites" && !selected ? (
+            favorites.length === 0 ? (
+              <EmptyState icon={<LuStar />} title="No favourites yet">
+                Star an exercise you do every week, then log it here in one click.
+              </EmptyState>
+            ) : (
+              <ul className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
+                {favorites.map((f) => {
+                  const v = favoriteValues(f, ex.entries)
+                  const done = loggedToday.has(f.name.toLowerCase())
+                  return (
+                    <li key={f.name} className="group flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-raised">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-bold leading-tight">{f.name}</p>
+                        <p className="truncate text-[11px] text-muted">
+                          {v.sets} × {v.reps}
+                          {v.weight != null && ` @ ${v.weight} ${ex.unit}`}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => toggleFav(f)}
+                        className="hidden text-muted hover:text-danger focus:block group-hover:block"
+                        aria-label={`Remove ${f.name} from favourites`}
+                        title="Remove from favourites"
+                      >
+                        <LuX />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => logFavorite(f)}
+                        className={cx(
+                          "grid h-7 w-7 shrink-0 place-items-center rounded-full transition",
+                          done ? "bg-accent text-white" : "bg-accent/15 text-accent hover:bg-accent/25",
+                        )}
+                        aria-label={`Log ${f.name} today`}
+                        title={done ? "Logged today. Click to log another set." : "Log today"}
+                      >
+                        {done ? <LuCheck /> : <LuPlus />}
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            )
+          ) : groups.length === 0 ? (
             <EmptyState icon={<LuDumbbell />} title="No workouts yet">
               Log an exercise and the muscle map lights up.
             </EmptyState>
@@ -248,6 +389,15 @@ export default function ExerciseTab({ isFull }) {
                           </p>
                         </div>
                         <div className="absolute right-1.5 top-1.5 flex gap-1.5 rounded-md bg-raised px-1 py-0.5 opacity-0 transition focus-within:opacity-100 group-hover:opacity-100">
+                        <button
+                          type="button"
+                          onClick={() => toggleFav(e)}
+                          className={isFavorite(favorites, e.name) ? "text-amber-400" : "text-muted hover:text-amber-400"}
+                          aria-label={`Favourite ${e.name}`}
+                          title={isFavorite(favorites, e.name) ? "Remove from favourites" : "Add to favourites"}
+                        >
+                          <LuStar className={isFavorite(favorites, e.name) ? "fill-current" : ""} />
+                        </button>
                         {g.day !== today && (
                           <button
                             type="button"

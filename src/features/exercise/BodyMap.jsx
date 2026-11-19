@@ -11,6 +11,16 @@ const SILHOUETTE = {
     "M75 194 C71 214 70 240 71 262 C72 276 74 286 74 296 C71 316 71 338 74 358 C74 366 70 374 72 381 L87 381 C87 372 84 364 84 356 C87 336 88 316 86 298 C88 286 90 276 92 262 C95 244 97 226 98 212 L100 212 L100 198 Z",
 }
 
+// One rounded ab block (left of the midline gap), from y0 to y1.
+const abBlock = (y0, y1, x0 = 88.5, x1 = 98.5, r = 2.5) =>
+  `M${x0 + r} ${y0} L${x1 - 1} ${y0} Q${x1} ${y0} ${x1} ${y0 + 1} L${x1} ${y1 - 1} Q${x1} ${y1} ${x1 - 1} ${y1} ` +
+  `L${x0 + r} ${y1} Q${x0} ${y1} ${x0} ${y1 - r} L${x0} ${y0 + r} Q${x0} ${y0} ${x0 + r} ${y0} Z`
+
+// Six-pack: three stacked blocks plus the tapering lower abs.
+const ABS =
+  abBlock(116, 131, 89.5) + abBlock(133, 148) + abBlock(150, 164) +
+  "M88.5 166 L98.5 166 L98.5 182 C95 182 91 178 89 172 Z"
+
 const FRONT = [
   ["traps", "M93 54 L93 62 C88 64 82 66 76 68 C82 62 88 58 93 54 Z"],
   ["frontDelts", "M77 69 C67 70 59 77 57 89 C56 95 57 100 59 104 C66 102 72 98 77 93 C79 86 81 78 81 71 Z"],
@@ -18,7 +28,7 @@ const FRONT = [
   ["chest", "M81 71 C88 69 96 71 99 73 L99 108 C92 114 82 114 77 110 C73 106 73 98 77 93 C79 87 81 79 81 71 Z"],
   ["biceps", "M55 108 C51 118 50 129 51 140 C55 144 60 144 63 140 C65 128 65 116 62 104 C59 104 57 105 55 108 Z"],
   ["forearms", "M50 147 C47 161 45 178 45 195 C48 197 52 197 55 195 C58 180 61 164 63 147 C58 149 54 149 50 147 Z"],
-  ["abs", "M88 116 L99 116 L99 172 C95 178 90 176 88 170 C87 152 87 134 88 116 Z"],
+  ["abs", ABS],
   ["obliques", "M77 115 C80 117 84 117 86 117 C85 134 85 152 86 170 C82 168 79 162 78 154 C76 141 75 128 77 115 Z"],
   ["quads", "M78 200 C74 222 72 248 75 276 C80 282 88 282 92 276 C95 256 96 232 95 212 C89 208 83 204 78 200 Z"],
   ["adductors", "M96 213 C98 215 99 217 99 219 L99 236 C97 248 95 258 93 266 C95 248 96 230 96 213 Z"],
@@ -68,8 +78,8 @@ function Figure({ title, muscles, intensity, selected, onSelect }) {
     </>
   )
   return (
-    <figure className="flex flex-1 flex-col items-center">
-      <svg viewBox="0 18 200 368" className="h-auto w-full max-w-[150px]" role="img" aria-label={`${title} muscle map`}>
+    <figure className="flex min-w-0 flex-1 flex-col items-center">
+      <svg viewBox="40 12 120 372" className="h-auto max-h-[250px] w-full" role="img" aria-label={`${title} muscle map`}>
         <g fill="rgb(var(--raised))">
           <ellipse cx="100" cy="32" rx="14" ry="18" />
           <rect x="92" y="44" width="16" height="16" rx="4" />
@@ -87,7 +97,7 @@ function Figure({ title, muscles, intensity, selected, onSelect }) {
 /** intensity: { muscleId: 0..1 }. Clicking a muscle calls onSelect(id | null). */
 export default function BodyMap({ intensity, selected, onSelect }) {
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-1 items-center gap-2">
       <Figure title="Front" muscles={FRONT} intensity={intensity} selected={selected} onSelect={onSelect} />
       <Figure title="Back" muscles={BACK} intensity={intensity} selected={selected} onSelect={onSelect} />
     </div>

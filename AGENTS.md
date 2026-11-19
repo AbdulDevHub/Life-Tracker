@@ -23,7 +23,7 @@ Verify-full: pnpm build
 - Changing a storage shape: bump `SCHEMA_VERSION` in `src/lib/defaults.js` and keep `parseImport` able to read older backups.
 - `public/background.js` is plain JS copied as-is (not bundled). It duplicates `habitsForMonth`/`waterDayKey` logic; keep both in sync.
 - Colours come from CSS variables in `src/index.css`; per-tab accent via `--accent` (see `context/UI_TOKENS.md`).
-- Popup is 800 px wide (Chrome max) and its height follows content up to 600 px; Water and Exercise use a fixed 468 px three-column body. Check every UI change at that size.
+- Popup is 800 px wide (Chrome max) and its height follows content up to 600 px; Water and Exercise use a fixed 424 px three-column body. Check every UI change at that size.
 
 ## Boundaries
 - No host permissions or content scripts without asking: the extension must not read pages.
